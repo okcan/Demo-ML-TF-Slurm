@@ -21,7 +21,7 @@ jobs:
     - name: SSH into SLURM server and run training
       run: |
         ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
-          cd /home/youruser/Demo-ML-TF-Slurm &&
+          cd /home/yasinsaygili/demo/Demo-ML-TF-Slurm &&
           git pull origin main &&
           sbatch train_job.slurm
         "
