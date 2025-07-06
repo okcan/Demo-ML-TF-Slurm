@@ -32,26 +32,24 @@ jobs:
           sudo systemctl enable --now slurmctld &&
           sudo systemctl enable --now slurmd &&
 
-          # Write slurm.conf line-by-line
-          sudo bash -c 'cat > /etc/slurm-llnl/slurm.conf <<EOL
-ControlMachine=localhost
-SlurmUser=slurm
-SlurmctldPort=6817
-SlurmdPort=6818
-AuthType=auth/munge
-StateSaveLocation=/var/spool/slurm/state
-SlurmdSpoolDir=/var/spool/slurmd
-SwitchType=switch/none
-MpiDefault=none
-SlurmctldTimeout=300
-SlurmdTimeout=300
-SchedulerType=sched/backfill
-SelectType=select/cons_res
-SelectTypeParameters=CR_Core
-
-NodeName=localhost CPUs=2 State=UNKNOWN
-PartitionName=debug Nodes=ALL Default=YES MaxTime=INFINITE State=UP
-EOL'
+          # Write slurm.conf using echo (YAML-safe)
+          sudo mkdir -p /etc/slurm-llnl
+          sudo bash -c 'echo "ControlMachine=localhost" > /etc/slurm-llnl/slurm.conf'
+          sudo bash -c 'echo "SlurmUser=slurm" >> /etc/slurm-llnl/slurm.conf'
+          sudo bash -c 'echo "SlurmctldPort=6817" >> /etc/slurm-llnl/slurm.conf'
+          sudo bash -c 'echo "SlurmdPort=6818" >> /etc/slurm-llnl/slurm.conf'
+          sudo bash -c 'echo "AuthType=auth/munge" >> /etc/slurm-llnl/slurm.conf'
+          sudo bash -c 'echo "StateSaveLocation=/var/spool/slurm/state" >> /etc/slurm-llnl/slurm.conf'
+          sudo bash -c 'echo "SlurmdSpoolDir=/var/spool/slurmd" >> /etc/slurm-llnl/slurm.conf'
+          sudo bash -c 'echo "SwitchType=switch/none" >> /etc/slurm-llnl/slurm.conf'
+          sudo bash -c 'echo "MpiDefault=none" >> /etc/slurm-llnl/slurm.conf'
+          sudo bash -c 'echo "SlurmctldTimeout=300" >> /etc/slurm-llnl/slurm.conf'
+          sudo bash -c 'echo "SlurmdTimeout=300" >> /etc/slurm-llnl/slurm.conf'
+          sudo bash -c 'echo "SchedulerType=sched/backfill" >> /etc/slurm-llnl/slurm.conf'
+          sudo bash -c 'echo "SelectType=select/cons_res" >> /etc/slurm-llnl/slurm.conf'
+          sudo bash -c 'echo "SelectTypeParameters=CR_Core" >> /etc/slurm-llnl/slurm.conf'
+          sudo bash -c 'echo "NodeName=localhost CPUs=2 State=UNKNOWN" >> /etc/slurm-llnl/slurm.conf'
+          sudo bash -c 'echo "PartitionName=debug Nodes=ALL Default=YES MaxTime=INFINITE State=UP" >> /etc/slurm-llnl/slurm.conf'
 
           sudo systemctl restart munge slurmctld slurmd
 
