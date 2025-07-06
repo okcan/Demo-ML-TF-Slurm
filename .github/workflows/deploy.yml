@@ -1,4 +1,5 @@
-name: Demo
+name: Deploy to SLURM Server and Train
+
 on:
   push:
     branches: [main]
@@ -8,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
+    - name: Checkout code
       uses: actions/checkout@v3
 
     - name: Set up SSH
@@ -18,10 +19,21 @@ jobs:
         chmod 600 ~/.ssh/id_ed25519
         ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
-    - name: SSH into SLURM server and run training
+    - name: Install dependencies & run training
       run: |
-        ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
-          cd /home/yasinsaygili/demo/Demo-ML-TF-Slurm &&
+        ssh youruser@${{ secrets.SSH_HOST }} "
+          sudo apt update && sudo apt install -y \
+            git python3 python3-pip python3-venv build-essential &&
+
+          cd /home/youruser/Demo-ML-TF-Slurm &&
+
+          # Create venv only if not exists
+          [ -d venv ] || python3 -m venv venv
+          source venv/bin/activate &&
+
+          pip install --upgrade pip &&
+          pip install torch pandas scikit-learn matplotlib &&
+
           git pull origin main &&
           sbatch train_job.slurm
         "
