@@ -14,9 +14,6 @@ A simple machine learning project for predicting weather conditions using histor
 ├── venv/ # (Optional) Python virtual environment
 └── README.md # Project overview
 
-yaml
-Copy
-Edit
 
 ---
 
