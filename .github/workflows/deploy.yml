@@ -1,4 +1,4 @@
-name: Deploy to SLURM Server and Train
+name: Demo
 
 on:
   push:
