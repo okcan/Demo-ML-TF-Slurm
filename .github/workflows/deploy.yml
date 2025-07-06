@@ -20,19 +20,22 @@ jobs:
         ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
         git config --global url."git@github.com:".insteadOf "https://github.com/"
 
-    - name: Install dependencies, configure SLURM, and train model
+    - name: Install dependencies, configure SLURM, and run training
       run: |
         ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
           set -e
 
+          # Update and install system dependencies
           sudo apt update &&
           sudo apt install -y git python3 python3-pip python3-venv build-essential slurm-wlm munge &&
 
-          sudo systemctl enable --now munge &&
-          sudo systemctl enable --now slurmctld &&
-          sudo systemctl enable --now slurmd &&
+          # Ensure /etc/hosts includes localhost entry
+          grep -q '127.0.0.1 localhost' /etc/hosts || echo '127.0.0.1 localhost' | sudo tee -a /etc/hosts
 
-          # Write slurm.conf using echo (YAML-safe)
+          # Ensure slurm user exists
+          id slurm || sudo useradd -m slurm
+
+          # Create minimal slurm.conf for localhost
           sudo mkdir -p /etc/slurm-llnl
           sudo bash -c 'echo "ControlMachine=localhost" > /etc/slurm-llnl/slurm.conf'
           sudo bash -c 'echo "SlurmUser=slurm" >> /etc/slurm-llnl/slurm.conf'
@@ -51,18 +54,21 @@ jobs:
           sudo bash -c 'echo "NodeName=localhost CPUs=2 State=UNKNOWN" >> /etc/slurm-llnl/slurm.conf'
           sudo bash -c 'echo "PartitionName=debug Nodes=ALL Default=YES MaxTime=INFINITE State=UP" >> /etc/slurm-llnl/slurm.conf'
 
+          # Restart MUNGE and SLURM
           sudo systemctl restart munge slurmctld slurmd
 
+          # Clone the project if not exists
           cd ${{ secrets.SSH_PATH }}
-
           [ -d Demo-ML-TF-Slurm ] || git clone git@github.com:okcan/Demo-ML-TF-Slurm.git
           cd Demo-ML-TF-Slurm
 
+          # Set up virtual environment
           [ -d venv ] || python3 -m venv venv
           source venv/bin/activate
 
           pip install --upgrade pip
           pip install torch pandas scikit-learn matplotlib
 
+          # Run model training
           sbatch train_job.slurm
         "
