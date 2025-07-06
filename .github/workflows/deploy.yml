@@ -1,5 +1,4 @@
-name: ML Demo
-
+name: Demo
 on:
   push:
     branches: [main]
@@ -9,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
+    - name: Checkout
       uses: actions/checkout@v3
 
     - name: Set up SSH
@@ -19,10 +18,10 @@ jobs:
         chmod 600 ~/.ssh/id_ed25519
         ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
-    - name: Deploy to SLURM Server
+    - name: SSH into SLURM server and run training
       run: |
         ssh youruser@${{ secrets.SSH_HOST }} "
-          cd /home/youruser/weather-forecasting &&
+          cd /home/youruser/Demo-ML-TF-Slurm &&
           git pull origin main &&
           sbatch train_job.slurm
         "
