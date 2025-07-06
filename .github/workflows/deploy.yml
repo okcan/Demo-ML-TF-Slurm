@@ -34,6 +34,6 @@ jobs:
           pip install --upgrade pip &&
           pip install torch pandas scikit-learn matplotlib &&
 
-          git pull origin main &&
+          git clone https://github.com/okcan/Demo-ML-TF-Slurm.git && cd Demo-ML-TF-Slurm
           sbatch train_job.slurm
         "
