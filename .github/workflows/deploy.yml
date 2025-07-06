@@ -55,6 +55,11 @@ jobs:
           sudo bash -c "echo 'SelectTypeParameters=CR_Core' >> /etc/slurm-llnl/slurm.conf"
           sudo bash -c "echo 'NodeName=$HOSTNAME CPUs=2 State=UNKNOWN' >> /etc/slurm-llnl/slurm.conf"
           sudo bash -c "echo 'PartitionName=debug Nodes=ALL Default=YES MaxTime=INFINITE State=UP' >> /etc/slurm-llnl/slurm.conf"
+          sudo bash -c "echo 'ClusterName=demo-cluster' >> /etc/slurm-llnl/slurm.conf"
+
+          # Symlink for systemd compatibility
+          sudo mkdir -p /etc/slurm
+          sudo ln -sf /etc/slurm-llnl/slurm.conf /etc/slurm/slurm.conf
 
           # Restart services
           sudo systemctl restart munge
