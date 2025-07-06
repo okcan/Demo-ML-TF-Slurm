@@ -4,19 +4,6 @@ A simple machine learning project for predicting weather conditions using histor
 
 ---
 
-## 📦 Project Structure
-
-📁 Demo-ML-TF-Slurm/
-├── model.py # Train model with weather data
-├── predict.py # Predict weather using trained model
-├── train_job.slurm # SLURM job submission script
-├── weather.csv # Weather dataset (CSV)
-├── venv/ # (Optional) Python virtual environment
-└── README.md # Project overview
-
-
----
-
 ## 📊 Dataset
 
 - **File:** `weather.csv`  
