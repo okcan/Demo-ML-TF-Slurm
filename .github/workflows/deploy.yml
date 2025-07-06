@@ -22,25 +22,21 @@ jobs:
 
     - name: Install dependencies, configure SLURM, and run training
       run: |
-        ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 'bash -s' <<'ENDSSH'
+        ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
           set -e
 
-          # Install dependencies
           sudo apt update &&
-          sudo apt install -y git python3 python3-pip python3-venv build-essential slurm-wlm munge &&
+          sudo apt install -y git python3 python3-pip python3-venv build-essential slurm-wlm munge
 
-          # Ensure hostname is resolvable
-          HOSTNAME=$(hostname)
-          echo "Detected hostname: $HOSTNAME"
-          grep -q "127.0.0.1 $HOSTNAME" /etc/hosts || echo "127.0.0.1 $HOSTNAME" | sudo tee -a /etc/hosts
+          HOSTNAME=\$(hostname)
+          echo 'Detected hostname: '\$HOSTNAME
+          grep -q \"127.0.0.1 \$HOSTNAME\" /etc/hosts || echo \"127.0.0.1 \$HOSTNAME\" | sudo tee -a /etc/hosts
 
-          # Create slurm user if not exists
           id slurm || sudo useradd -m slurm
 
-          # Create slurm.conf using heredoc
           sudo mkdir -p /etc/slurm-llnl
-          sudo tee /etc/slurm-llnl/slurm.conf > /dev/null <<EOF
-ControlMachine=$HOSTNAME
+          sudo tee /etc/slurm-llnl/slurm.conf > /dev/null <<EOL
+ControlMachine=\$HOSTNAME
 SlurmUser=slurm
 SlurmctldPort=6817
 SlurmdPort=6818
@@ -54,27 +50,23 @@ SlurmdTimeout=300
 SchedulerType=sched/backfill
 SelectType=select/cons_res
 SelectTypeParameters=CR_Core
-NodeName=$HOSTNAME CPUs=2 State=UNKNOWN
+NodeName=\$HOSTNAME CPUs=2 State=UNKNOWN
 PartitionName=debug Nodes=ALL Default=YES MaxTime=INFINITE State=UP
-EOF
+EOL
 
-          # Restart services
           sudo systemctl restart munge
           sudo systemctl restart slurmctld
           sudo systemctl restart slurmd
 
-          # Go to repo directory
           cd ${{ secrets.SSH_PATH }}
           [ -d Demo-ML-TF-Slurm ] || git clone git@github.com:okcan/Demo-ML-TF-Slurm.git
           cd Demo-ML-TF-Slurm
 
-          # Set up Python environment
           [ -d venv ] || python3 -m venv venv
           source venv/bin/activate
 
           pip install --upgrade pip
           pip install torch pandas scikit-learn matplotlib
 
-          # Run SLURM job
           sbatch train_job.slurm
-        ENDSSH
+        "
