@@ -9,6 +9,6 @@
 
 module load python/3.9
 
-cd /home/youruser/weather-forecasting
+cd cd /home/yasinsaygili/demo/Demo-ML-TF-Slurm/Demo-ML-TF-Slurm
 python3 model.py
 
