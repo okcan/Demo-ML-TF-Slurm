@@ -18,22 +18,47 @@ jobs:
         echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
         chmod 600 ~/.ssh/id_ed25519
         ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+        git config --global url."git@github.com:".insteadOf "https://github.com/"
 
-    - name: Install dependencies & run training
+    - name: Install dependencies, SLURM & run training
       run: |
         ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
-          sudo apt update && sudo apt install -y \
-            git python3 python3-pip python3-venv build-essential &&
+          set -e
 
+          # Install dependencies and SLURM
+          sudo apt update &&
+          sudo apt install -y git python3 python3-pip python3-venv build-essential slurm-wlm munge &&
+
+          # Enable and start MUNGE and SLURM services
+          sudo systemctl enable --now munge &&
+          sudo systemctl enable --now slurmd &&
+          sudo systemctl enable --now slurmctld ||
+
+          echo 'SLURM services may already be running.' &&
+
+          # Copy basic slurm.conf if missing
+          [ -f /etc/slurm-llnl/slurm.conf ] || \
+            sudo cp /usr/share/doc/slurm-wlm/examples/slurm.conf.simple /etc/slurm-llnl/slurm.conf &&
+
+          # Reload daemons (for good measure)
+          sudo systemctl daemon-reexec &&
+          sudo systemctl restart munge slurmd slurmctld &&
+
+          # Project path
           cd ${{ secrets.SSH_PATH }} &&
 
-          # Create venv only if not exists
+          # Clone repo only if not exists
+          [ -d Demo-ML-TF-Slurm ] || git clone git@github.com:okcan/Demo-ML-TF-Slurm.git &&
+
+          cd Demo-ML-TF-Slurm &&
+
+          # Set up virtualenv
           [ -d venv ] || python3 -m venv venv
           source venv/bin/activate &&
 
           pip install --upgrade pip &&
           pip install torch pandas scikit-learn matplotlib &&
 
-          git clone https://github.com/okcan/Demo-ML-TF-Slurm.git && cd Demo-ML-TF-Slurm
+          # Run training
           sbatch train_job.slurm
         "
