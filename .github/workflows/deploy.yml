@@ -25,17 +25,15 @@ jobs:
         ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
           set -e
 
-          # Update and install dependencies
           sudo apt update &&
           sudo apt install -y git python3 python3-pip python3-venv build-essential slurm-wlm munge &&
 
-          # Enable and start services
           sudo systemctl enable --now munge &&
           sudo systemctl enable --now slurmctld &&
           sudo systemctl enable --now slurmd &&
 
-          # Generate basic slurm.conf for localhost (single-node config)
-          sudo tee /etc/slurm-llnl/slurm.conf > /dev/null <<EOF
+          # Write slurm.conf line-by-line
+          sudo bash -c 'cat > /etc/slurm-llnl/slurm.conf <<EOL
 ControlMachine=localhost
 SlurmUser=slurm
 SlurmctldPort=6817
@@ -53,26 +51,20 @@ SelectTypeParameters=CR_Core
 
 NodeName=localhost CPUs=2 State=UNKNOWN
 PartitionName=debug Nodes=ALL Default=YES MaxTime=INFINITE State=UP
-EOF
+EOL'
 
-          # Restart SLURM services after config
-          sudo systemctl restart munge slurmctld slurmd &&
+          sudo systemctl restart munge slurmctld slurmd
 
-          # Project directory
-          cd ${{ secrets.SSH_PATH }} &&
+          cd ${{ secrets.SSH_PATH }}
 
-          # Clone repo if not present
-          [ -d Demo-ML-TF-Slurm ] || git clone git@github.com:okcan/Demo-ML-TF-Slurm.git &&
+          [ -d Demo-ML-TF-Slurm ] || git clone git@github.com:okcan/Demo-ML-TF-Slurm.git
+          cd Demo-ML-TF-Slurm
 
-          cd Demo-ML-TF-Slurm &&
-
-          # Set up virtualenv
           [ -d venv ] || python3 -m venv venv
-          source venv/bin/activate &&
+          source venv/bin/activate
 
-          pip install --upgrade pip &&
-          pip install torch pandas scikit-learn matplotlib &&
+          pip install --upgrade pip
+          pip install torch pandas scikit-learn matplotlib
 
-          # Run model training via SLURM
           sbatch train_job.slurm
         "
