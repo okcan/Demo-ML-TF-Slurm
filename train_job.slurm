@@ -3,7 +3,7 @@
 #SBATCH --output=train_output.log
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=2
-#SBATCH --mem=4G
+#SBATCH --mem=512M
 #SBATCH --time=00:05:00
 #SBATCH --partition=debug
 
