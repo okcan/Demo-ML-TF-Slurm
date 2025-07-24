@@ -1,4 +1,4 @@
-# 🌤️ Weather Forecasting with TensorFlow & SLURM for EML
+# 🌤️ Weather Forecasting with TensorFlow & SLURM
 
 A simple machine learning project for predicting weather conditions using historical data. The model is trained using Python and TensorFlow, and jobs are scheduled with **SLURM**, a popular HPC workload manager.
 
